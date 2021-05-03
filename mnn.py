@@ -1,6 +1,11 @@
 from sklearn.datasets import make_blobs
 import numpy as np
+import matplotlib.pyplot as plt
+
 class Operation():
+    '''
+        Objects of type Operation
+    '''
     def __init__(self, input_nodes=[]):
         self.input_nodes=input_nodes
         self.output_nodes=[]
@@ -13,6 +18,9 @@ class Operation():
         pass
     
 class add(Operation):
+    '''
+        This implements simple addition for the objects we pass into it
+    '''
     def __init__(self, x, y):
         super().__init__([x,y])
 
@@ -21,6 +29,9 @@ class add(Operation):
         return x_var + y_var
 
 class multiply(Operation):
+    '''
+        This implemenets simple multiplication for objects we pass into it
+    '''
     def __init__(self, x, y):
         super().__init__([x,y])
 
@@ -30,6 +41,7 @@ class multiply(Operation):
 
 
 class matmul(Operation):
+    ''' Function for basic matrix multipliction '''
     def __init__(self, x, y):
         super().__init__([x,y])
 
@@ -43,14 +55,15 @@ class Placeholder():
         self.output_nodes=[]
         _default_graph.placeholders.append(self)
 
-class Variable():
+class Variable(): 
+    ''' allows us to create very loosely defined variables'''
     def __init__(self, initial_value=None):
         self.value=initial_value
         self.output_nodes = []
-
         _default_graph.variables.append(self)
 
 class Graph():
+    ''' A broader object we'll use for the majority of operations'''
     def __init__(self):
         self.operations = []
         self.placeholders = []
@@ -62,7 +75,6 @@ class Graph():
 
 
 
-# Going to be adding in a traverse order of operations to compute the above 
 
 def traverse_postorder(operation):
     """
@@ -81,6 +93,7 @@ def traverse_postorder(operation):
 
 class Session():
 
+    ''' Sets up the order in which information is passed between nodes '''
     def run(self,operation, feed_dict={}):
         nodes_postorder = traverse_postorder(operation)
         for node in nodes_postorder:
@@ -97,33 +110,33 @@ class Session():
                 node.output = np.array(node.output)
         return operation.output
 
+''' This was some test code for earlier on
+# sess = Session()
 
-sess = Session()
+# g = Graph()
 
-g = Graph()
+# g.set_as_default()
 
-g.set_as_default()
+# A = Variable([[10,20],[30,40]])
+# b = Variable([1,1])
 
-A = Variable([[10,20],[30,40]])
-b = Variable([1,1])
+# x = Placeholder()
 
-x = Placeholder()
+# y = matmul(A, x)
 
-y = matmul(A, x)
+# z = add(y,b)
 
-z = add(y,b)
+# result = sess.run(operation=z, feed_dict={x:10})
 
-result = sess.run(operation=z, feed_dict={x:10})
+# print(result)
 
-print(result)
-
-
+'''
 # Classification Section
 # Activation Function
 
-import matplotlib.pyplot as plt
 
 def sigmoid(z):
+    ''' Defining the sigmoid activation function '''
     return 1 / (1 + np.exp(-z))
 
 sample_z = np.linspace(-10,10,100)
@@ -133,10 +146,11 @@ plt.plot(sample_z,sample_a)
 plt.show()
 
 class Sigmoid(Operation):
+    ''' Setting up Sigmoid as a class'''
     def __init__(self, z):
         super().__init__([z])
     def compute(self,z_val):
-        return 1 / (1 + np.exp(-z))
+        return 1 / (1 + np.exp(-z_val))
 
 data = make_blobs(n_samples=50, n_features=2,centers=2,random_state=75)
 
@@ -155,8 +169,17 @@ plt.plot(x,y)
 plt.show()
 
 
+# End of the program running bits to get things finally going below:
 
+g = Graph()
+g.set_as_default()
 
+x = Placeholder()
+w = Variable([1,1])
+b = Variable(-5)
+z = add(matmul(w,x),b)
+a = Sigmoid(z)
 
+sess = Session()
 
-
+print(sess.run(operation=a, feed_dict={x:[8,10]}))
